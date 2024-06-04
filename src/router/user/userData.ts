@@ -2,8 +2,9 @@ import express from "express"
 import {uuid} from "uuidv4"
 import User, { UserInterface, UserInterfaceMain } from "../../models/User"
 import axios from "axios"
-import { authURL, client_id, client_secret } from "../../googleTokens"
+
 import { error_format } from "../errorFormat"
+import { auth_URL, client_id, client_secret } from "../../server"
 
 const router = express.Router()
 
@@ -14,9 +15,10 @@ interface authReturnDataInterface {
     picture:string,
     userId:string,
 }
-
 router.post("/auth",async(req,res)=>{
     try{
+        console.log(process.env.GOOGLE_CLIENT_ID)
+        console.log(client_secret)
         const authCode = req.body.authCode
         let accessToken:string = req.body.accessToken
         let refreshToken:string = req.body.refreshToken
@@ -28,7 +30,7 @@ router.post("/auth",async(req,res)=>{
                     code:authCode,
                     client_id:client_id,
                     client_secret:client_secret,
-                    redirect_uri:authURL,
+                    redirect_uri:auth_URL,
                     grant_type:"authorization_code"
                 })
                 accessToken = userTokens.data.access_token
