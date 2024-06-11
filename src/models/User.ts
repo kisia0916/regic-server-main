@@ -15,7 +15,8 @@ export interface UserInterfaceMain extends UserInterface{
 const dbSchema:Schema = new Schema({
     userId:{
         type:String,
-        required:true
+        unique:true,
+        required:true,
     },
     userName:{
         type:String,
@@ -23,6 +24,7 @@ const dbSchema:Schema = new Schema({
     },
     mail:{
         type:String,
+        unique:true,
         required:true
     }
 },{

@@ -29,11 +29,11 @@ const dbSchema:Schema = new Schema({
     },
     pubKey:{
         type:String,
-        required:true
+        default:""
     },
     privateKey:{
         type:String,
-        required:true
+        default:""
     }
 },{
     timestamps:true

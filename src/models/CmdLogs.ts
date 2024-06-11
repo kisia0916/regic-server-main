@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface CmdLogInterface extends Document {
     logId:string,
     userId:string,
+    machineId:string,
     content:string,
     response:string
 }
@@ -15,6 +16,10 @@ export interface CmdLogInterfaceMain extends CmdLogInterface{
 
 const dbSchema:Schema = new Schema({
     logId:{
+        type:String,
+        required:true
+    },
+    machineId:{
         type:String,
         required:true
     },
@@ -34,4 +39,4 @@ const dbSchema:Schema = new Schema({
     timestamps:true
 })
 
-export default mongoose.model<CmdLogInterface>("CmdLog",dbSchema)
+export default mongoose.model<CmdLogInterface>("CmdLogs",dbSchema)

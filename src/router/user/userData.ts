@@ -17,12 +17,9 @@ interface authReturnDataInterface {
 }
 router.post("/auth",async(req,res)=>{
     try{
-        console.log(process.env.GOOGLE_CLIENT_ID)
-        console.log(client_secret)
         const authCode = req.body.authCode
         let accessToken:string = req.body.accessToken
         let refreshToken:string = req.body.refreshToken
-
         if (authCode){
             try{
                 let returnData:authReturnDataInterface;
