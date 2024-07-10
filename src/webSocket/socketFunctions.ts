@@ -14,10 +14,14 @@ export const socketFunctions = (socket:any)=>{
             //auth  
             const authResult = authFunction(data.token,jwt_secret_key as string)
             if (authResult.status === "success"){
-                onlineUserList.push({
-                    userId:authResult.decode?.userId as string,
-                    socketId:socket.id    
-                })
+                const onlineUser = onlineUserList.findIndex((i)=>i.userId === authResult.decode?.userId)
+                if (onlineUser === -1){
+                    onlineUserList.push({
+                        userId:authResult.decode?.userId as string,
+                        socketId:socket.id    
+                    })
+                }
+                console.log(onlineUserList)
             }else{
 
             }
@@ -26,10 +30,15 @@ export const socketFunctions = (socket:any)=>{
             const hashPass = await bcrypt.hash(data.token,10)
             const regicRemoteMachine = await RemoteMachine.findOne({machineToken:hashPass})
             if (regicRemoteMachine){
-                onlineHostList.push({
-                    machineId:regicRemoteMachine.machineId,
-                    socketId:socket.id
-                })
+                const remoteMachine = onlineHostList.findIndex((i)=>i.machineId === regicRemoteMachine.machineId)
+                if (remoteMachine === -1){
+                    onlineHostList.push({
+                        machineId:regicRemoteMachine.machineId,
+                        machineName:regicRemoteMachine.machineName,
+                        socketId:socket.id
+                    })
+                }
+                console.log(onlineHostList)
             }else{
 
             }

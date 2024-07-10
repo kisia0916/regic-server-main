@@ -8,6 +8,7 @@ import { uuid } from "uuidv4"
 import { checkBodyContents } from "../../functions/checkBodyContents"
 import { jwt_secret_key } from "../../server"
 import bcrypt from "bcrypt"
+import { onlineHostList } from "../../webSocket/socketFunctions"
 
 const router = express.Router()
 
@@ -40,11 +41,11 @@ router.post("/newmachine",async(req:any,res)=>{
     }
 })
 
-router.get("/getmachine",async(req:custom_request,res)=>{
+router.post("/getmachine",async(req:custom_request,res)=>{
     try{
         const userId = req.auth_result?.decode.userId
         const machineList:RemoteMachineInterfaceMain[] = await RemoteMachine.find({userId:userId})
-        return res.status(200).json(machineList)
+        return res.status(200).json({allRemoteMachine:machineList,onlineRemoteMachine:onlineHostList})
     }catch(error){
         console.log(error)
         return res.status(500).json(error_format("server error","status 500"))
