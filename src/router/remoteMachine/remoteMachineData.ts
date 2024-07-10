@@ -1,61 +1,52 @@
 import express from "express"
 import RemoteMachine, { RemoteMachineInterfaceMain } from "../../models/RemoteMachine"
 import User from "../../models/User"
-import { authFunction } from "../../functions/authFunctions"
-import { authResultInterface } from "../../Interfaces/authReturnInterface"
+import { auth_status_type, authFunction } from "../../functions/authFunctions"
+import { authResultInterface, custom_request } from "../../Interfaces/authReturnInterface"
 import { error_format } from "../errorFormat"
 import { uuid } from "uuidv4"
 import { checkBodyContents } from "../../functions/checkBodyContents"
+import { jwt_secret_key } from "../../server"
+import bcrypt from "bcrypt"
 
 const router = express.Router()
 
-router.post("/newmachine",async(req,res)=>{
+router.post("/newmachine",async(req:any,res)=>{
     try{
-        const access_token = req.body.access_token
-        const refresh_token = req.body.refresh_token
-        const userId = req.body.userId
-        const bodyCheck = checkBodyContents([access_token,refresh_token,userId])
-        const authResult:authResultInterface = await authFunction(access_token,refresh_token,userId)
-        if (authResult.state){
-            if (bodyCheck){
+        const machineName = req.body.machine_name
+        const bodyCheck = checkBodyContents([machineName])
+        if (bodyCheck){
+            const authResult:auth_status_type = req.auth_result
+            const regicUser = await User.findOne({userId:authResult.decode?.userId})
+            if (regicUser){
+                const machineToken = uuid()
+                const hashToken = await bcrypt.hash(machineToken,10)
                 const newMachine = new RemoteMachine({
                     machineId:uuid(),
-                    machineName:"new machine",
-                    userId:userId,
-                    pubKey:"",
-                    privateKey:""
+                    machineName:machineName,
+                    userId:regicUser.userId,
+                    machineToken:hashToken
                 })
-                newMachine.save()
-                return res.status(200).json(newMachine)
+                await newMachine.save()
+                return res.status(200).json({machineToken:machineToken})
             }else{
-                return res.status(400).json(error_format("bad_request","status 400"))
+                return res.status(404).json(error_format("user_not_found","status 404"))
             }
         }else{
-            return res.status(401).json(error_format("auth_error","status 401"))
+            return res.status(400).json(error_format("bad_request","status 400"))
         }
-    }catch(error){
-        return res.status(500).json("error")
+    }catch{
+        return res.status(500).json(error_format("server error","status 500"))
     }
 })
 
-router.get("/getmachine",async(req,res)=>{
+router.get("/getmachine",async(req:custom_request,res)=>{
     try{
-        const access_token = req.body.access_token
-        const refresh_token = req.body.refresh_token
-        const userId = req.body.userId
-        const bodyCheck = checkBodyContents([access_token,refresh_token,userId])
-        const authResult:authResultInterface = await authFunction(access_token,refresh_token,userId)
-        if (authResult.state){
-            if (bodyCheck){
-                const getData:RemoteMachineInterfaceMain[]|null = await RemoteMachine.find({userId:userId})
-                return res.status(200).json({data:getData,token:authResult.newToken})
-            }else{
-                return res.status(400).json(error_format("bad_request","status 400"))
-            }
-        }else{
-            return res.status(401).json(error_format("auth_error","status 401"))
-        }
+        const userId = req.auth_result?.decode.userId
+        const machineList:RemoteMachineInterfaceMain[] = await RemoteMachine.find({userId:userId})
+        return res.status(200).json(machineList)
     }catch(error){
+        console.log(error)
         return res.status(500).json(error_format("server error","status 500"))
     }
 })

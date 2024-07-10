@@ -1,76 +1,32 @@
 import axios from "axios"
 import User from "../models/User"
 import { client_id, client_secret } from "../server";
-import { authResultInterface } from "../Interfaces/authReturnInterface";
+import { authResultInterface, jwt_format } from "../Interfaces/authReturnInterface";
+import jwt from "jsonwebtoken"
 
-interface newTokenInterface{
-    access_token:string,
-    expires_in:number,
-    scope:string,
-    token_type:string,
-    id_token:string
+export interface auth_status_type {
+    status:"success"|"error"|"time_out",
+    decode:jwt_format|undefined
 }
 
-export const authFunction = async(accessToken:string,refreshToken:string,userId:string):Promise<authResultInterface>=>{
-    let googleUserInfo:any;
-    try{
-        refreshToken = decodeURIComponent(refreshToken)
-        googleUserInfo = await axios.get("https://www.googleapis.com/oauth2/v2/userinfo",{
-            headers:{
-                Authorization:`Bearer ${accessToken}`
-            }
-        })
-        const regicUserinfo = await User.findOne({mail:googleUserInfo.data.email})
-        if (regicUserinfo){
-            return {state:regicUserinfo.userId===userId?true:false,newToken:""}
-        }else{
-            return {state:false,newToken:""}
-        }
-    }catch(error){
-        try{
-            const newTokens = await axios.post("https://oauth2.googleapis.com/token",{
-                client_id:client_id,
-                client_secret:client_secret,
-                refresh_token:refreshToken,
-                grant_type:"refresh_token"
-            })
-            googleUserInfo = await axios.get("https://www.googleapis.com/oauth2/v2/userinfo",{
-                headers:{
-                    Authorization:`Bearer ${newTokens.data.access_token}`
-                }
-            })
-            const regicUserinfo = await User.findOne({mail:googleUserInfo.data.email})
-            if (regicUserinfo){
-                return {state:regicUserinfo.userId===userId?true:false,newToken:newTokens.data.access_token}
+export const authFunction = (jwtToken:string,secretToken:string):auth_status_type=>{
+    if (jwtToken){
+        let status:"success"|"error"|"time_out" = "error";
+        let decodeResult:jwt_format|undefined = undefined
+        jwt.verify(jwtToken,secretToken,(error:any,decode:any)=>{
+            const date = Math.floor(Date.now()/1000)
+            const exp = decode.exp
+            if (error){
+               status = "error"
+            }else if (date>exp){
+                status = "time_out"
             }else{
-                return {state:false,newToken:""}
+                status = "success"
             }
-        }catch(error){
-            return {state:false,newToken:""}
-        }
-    }
-}
-
-export const authFunctionRefreshOnly = async(refreshToken:string,email:string)=>{
-    try{
-        let googleUserInfo:any
-        const newTokens = await axios.post("https://oauth2.googleapis.com/token",{
-            client_id:client_id,
-            client_secret:client_secret,
-            refresh_token:refreshToken,
-            grant_type:"refresh_token"
+            decodeResult = decode
         })
-        googleUserInfo = await axios.get("https://www.googleapis.com/oauth2/v2/userinfo",{
-            headers:{
-                Authorization:`Bearer ${newTokens.data.access_token}`
-            }
-        })
-        const regicUser = await User.findOne({mail:email})
-        if (regicUser){
-        }else{
-            return {state:false,newToken:""}
-        }
-    }catch(error){
-        return {state:false,newToken:""}
+        return {status:status,decode:decodeResult}
+    }else{  
+        return {status:"error",decode:undefined}
     }
 }

@@ -1,0 +1,8 @@
+・first_handshake
+userまたはremoteMachineが接続した際に最初に行われる通信
+認証を行い成功するとonlineUserListまたはonlineHostListにuserIdとsocketIdが登録される
+
+・connection_request
+userがremoteMachineとサーバーを介して接続を行う際に最初に行われる通信
+dataにはjwtTokenとmachineIdがありjwt認証が成功するとmachineIdに対して接続リクエストの通信を行う
+

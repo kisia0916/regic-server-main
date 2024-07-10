@@ -4,6 +4,7 @@ export interface RemoteMachineInterface {
     machineId:string,
     machineName:string,
     userId:string,
+    machineToken:string,
     pubKey:string,
     privateKey:string,
 }
@@ -21,9 +22,15 @@ const dbSchema:Schema = new Schema({
     },
     machineName:{
         type:String,
+        unique: true,
+        sparse: true,
         required:true,
     },
     userId:{
+        type:String,
+        required:true
+    },
+    machineToken:{
         type:String,
         required:true
     },

@@ -7,8 +7,13 @@ dotenv.config()
 import userData from "./router/user/userData"
 import machineData from "./router/remoteMachine/remoteMachineData"
 import cmdLog from "./router/cmdLog/cmdLogData"
-import { authFunction } from "./functions/authFunctions"
 import bodyParser from "body-parser"
+import jwt from "jsonwebtoken"
+import { error_format } from './router/errorFormat';
+import { Socket } from 'socket.io';
+import {Server} from "socket.io"
+import { socketFunctions } from './webSocket/socketFunctions';
+import cors from "cors"
 
 const app = express()
 const server = http.createServer(app)
@@ -24,6 +29,11 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
 });
+app.use(cors({
+    origin: 'http://localhost:3000', // ReactアプリケーションのURL
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 許可するHTTPメソッド
+    allowedHeaders: ['Content-Type', 'Authorization'] // 許可するヘッダー
+}));
 app.use(express.json())
 app.use(bodyParser.json());
 app.use((err: SyntaxError, req: Request, res: Response, next: NextFunction) => {
@@ -46,7 +56,47 @@ export const client_secret = process.env.GOOGLE_CLIENT_SECRET
 export const auth_URL = process.env.AUTH_URL
 export const jwt_secret_key = process.env.JWT_SECRET_KEY
 
+
+//websocket
+export const io = new Server(server,{
+    cors:{
+        origin:["http://localhost:3000"]
+    }
+})
+io.on("connection",(socket)=>{
+    socketFunctions(socket)
+})
+
 app.use("/user",userData)
+
+//authミドルウェア
+app.use((req:any,res,next)=>{
+    try{
+        const jwtToken = req.body.jwt_token
+        if (jwtToken){
+            return new Promise((resolve,reject)=>{
+                jwt.verify(jwtToken,jwt_secret_key as string,(error:any,decode:any)=>{
+                    const date = Math.floor(Date.now()/1000)
+                    const exp = decode.exp
+                    if (error){
+                        resolve(res.status(401).json(error_format("auth_error","status 401")))
+                    }else if (date>exp){
+                        resolve(res.status(400).json(error_format("token_time_out","status 400")))
+                    }else{
+                        req.auth_result = {decode:decode}
+                        next()
+                    }
+                })
+            }).then(()=>{}).catch((error)=>{
+                return res.status(500).json(error_format("server_error","status 500"))
+            })
+        }else{  
+            return res.status(400).json(error_format("bad_request","status 400"))
+        }
+    }catch{
+        return res.status(500).json(error_format("server_error","status 500"))
+    }
+})
 app.use("/remotemachine",machineData)
 app.use("/cmdlog",cmdLog)
 
