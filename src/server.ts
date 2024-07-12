@@ -14,6 +14,7 @@ import { Socket } from 'socket.io';
 import {Server} from "socket.io"
 import { socketFunctions } from './webSocket/socketFunctions';
 import cors from "cors"
+import User from './models/User';
 
 const app = express()
 const server = http.createServer(app)
@@ -76,16 +77,21 @@ app.use((req:any,res,next)=>{
         const jwtToken = req.body.jwt_token
         if (jwtToken){
             return new Promise((resolve,reject)=>{
-                jwt.verify(jwtToken,jwt_secret_key as string,(error:any,decode:any)=>{
-                    const date = Math.floor(Date.now()/1000)
-                    const exp = decode.exp
-                    if (error){
-                        resolve(res.status(401).json(error_format("auth_error","status 401")))
-                    }else if (date>exp){
-                        resolve(res.status(400).json(error_format("token_time_out","status 400")))
+                jwt.verify(jwtToken,jwt_secret_key as string,async(error:any,decode:any)=>{
+                    const regicUser = await User.findOne({userId:decode.userId})
+                    if (regicUser){
+                        const date = Math.floor(Date.now()/1000)
+                        const exp = decode.exp
+                        if (error){
+                            resolve(res.status(401).json(error_format("auth_error","status 401")))
+                        }else if (date>exp){
+                            resolve(res.status(400).json(error_format("token_time_out","status 400")))
+                        }else{
+                            req.auth_result = {decode:decode}
+                            next()
+                        }
                     }else{
-                        req.auth_result = {decode:decode}
-                        next()
+                        resolve(res.status(404).json(error_format("user_not_found","status 404")))
                     }
                 })
             }).then(()=>{}).catch((error)=>{
