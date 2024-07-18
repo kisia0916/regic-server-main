@@ -8,7 +8,7 @@ import bcrypt, { hash } from "bcrypt"
 export const onlineUserList:onlineUserListInterface[] = []
 export const onlineHostList:onlineHostListInterface[] = []
 
-export const socketFunctions = (socket:any,mco:number)=>{
+export const socketFunctions = (socket:any)=>{
     socket.on("first_handshake",async(data:first_handshake_interface)=>{
         try{
             if (data.userType === "client"){

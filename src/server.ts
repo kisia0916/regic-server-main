@@ -34,7 +34,8 @@ app.use((req, res, next) => {
 app.use(cors({
     origin: ["http://localhost:3000","http://localhost:1212"], // ReactアプリケーションのURL
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 許可するHTTPメソッド
-    allowedHeaders: ['Content-Type', 'Authorization'] // 許可するヘッダー
+    allowedHeaders: ['Content-Type', 'Authorization'], // 許可するヘッダー
+    credentials:true
 }));
 //すべてのcorsを許可
 app.use(express.json())
@@ -65,15 +66,13 @@ export const io = new Server(server,{
     cors:{
         origin:["http://localhost:1212","http://localhost:3000"],
         allowedHeaders: ["my-custom-header"],
+        methods:["GET","POST"],
         credentials: true
     }
 })
-let co = 0
 io.on("connection",(socket)=>{
     console.log("userconnection")
-    co+=1
-    const mco = co
-    socketFunctions(socket,mco)
+    socketFunctions(socket)
 })
 
 app.use("/user",userData)
