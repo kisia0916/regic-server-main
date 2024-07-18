@@ -32,10 +32,11 @@ app.use((req, res, next) => {
     next();
 });
 app.use(cors({
-    origin: 'http://localhost:3000', // ReactアプリケーションのURL
+    origin: ["http://localhost:3000","http://localhost:1212"], // ReactアプリケーションのURL
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 許可するHTTPメソッド
     allowedHeaders: ['Content-Type', 'Authorization'] // 許可するヘッダー
 }));
+//すべてのcorsを許可
 app.use(express.json())
 app.use(bodyParser.json());
 app.use((err: SyntaxError, req: Request, res: Response, next: NextFunction) => {
@@ -62,12 +63,17 @@ export const jwt_secret_key = process.env.JWT_SECRET_KEY
 //websocket
 export const io = new Server(server,{
     cors:{
-        origin:["http://localhost:3000"]
+        origin:["http://localhost:1212","http://localhost:3000"],
+        allowedHeaders: ["my-custom-header"],
+        credentials: true
     }
 })
+let co = 0
 io.on("connection",(socket)=>{
     console.log("userconnection")
-    socketFunctions(socket)
+    co+=1
+    const mco = co
+    socketFunctions(socket,mco)
 })
 
 app.use("/user",userData)

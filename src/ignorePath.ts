@@ -1,3 +1,4 @@
 export const ignorePathList = [
-    "/remotemachine/newmachine"
+    "/remotemachine/newmachine",
+    "/remotemachine/authremotemachine"
 ]

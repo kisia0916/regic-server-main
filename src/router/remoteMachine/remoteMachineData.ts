@@ -30,16 +30,17 @@ router.post("/newmachine",async(req:any,res)=>{
                         const regicUser = await User.findOne({userId:userId})
                         const isCreated = await RemoteMachine.findOne({machineName:machineName})
                         if (regicUser && !isCreated){
-                            const machineToken = uuid()
-                            const hashToken = await bcrypt.hash(machineToken,10)
+                            const machineId = uuid()
+                            const machineToken = `${uuid()}:${machineId}`
+                            const hashToken = await bcrypt.hash(machineToken as string,10)
                             const newMachine = new RemoteMachine({
-                                machineId:uuid(),
+                                machineId:machineId,
                                 machineName:machineName,
                                 userId:regicUser.userId,
                                 machineToken:hashToken
                             })
                             await newMachine.save()
-                            resolve(res.status(200).json({machineToken:machineToken}))
+                            resolve(res.status(200).json({machineToken:btoa(machineToken)}))
                         }else{
                             resolve(res.status(404).json(error_format("user_not_found","status 404")))
                         }
@@ -50,6 +51,31 @@ router.post("/newmachine",async(req:any,res)=>{
             })
         }else{
             return res.status(400).json(error_format("bad_request3","status 400"))
+        }
+    }catch{
+        return res.status(500).json(error_format("server error","status 500"))
+    }
+})
+
+router.post("/authremotemachine",async(req,res)=>{
+    try{
+        const authToken = req.body.authToken
+        const decodedAuthToken = atob(authToken)
+        const splitToken = decodedAuthToken.split(":")
+        if (splitToken.length === 2){
+            const machineId = splitToken[1]
+            const regicRemoteMachine = await RemoteMachine.findOne({machineId:machineId})
+            if (regicRemoteMachine){
+                if(await bcrypt.compareSync(decodedAuthToken,regicRemoteMachine.machineToken)){
+                    return res.status(200).json("succeed")
+                }else{
+                    return res.status(401).json(error_format("auth_error","status 401"))
+                }
+            }else{
+                return res.status(404).json(error_format("remote_machine_not_found","status 404"))
+            }
+        }else{
+            return res.status(400).json(error_format("bad_request","status 400"))
         }
     }catch{
         return res.status(500).json(error_format("server error","status 500"))

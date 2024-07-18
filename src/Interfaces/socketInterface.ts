@@ -12,7 +12,9 @@ export interface onlineUserListInterface{
 export interface onlineHostListInterface {
     machineId:string,
     machineName:string,
-    socketId:string
+    socketId:string,
+    machineToken:string,
+    userId:string
 }
 
 export interface connectionRequestInterface {
