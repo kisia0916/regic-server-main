@@ -65,8 +65,8 @@ export const jwt_secret_key = process.env.JWT_SECRET_KEY
 export const io = new Server(server,{
     cors:{
         origin:["http://localhost:1212","http://localhost:3000"],
-        allowedHeaders: ["my-custom-header"],
-        methods:["GET","POST"],
+        allowedHeaders: ["my-custom-header",'Content-Type', 'Authorization'],
+        methods:['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         credentials: true
     }
 })
