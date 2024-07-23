@@ -21,3 +21,8 @@ export interface connectionRequestInterface {
     machineId:string,
     jwtToken:string
 }
+
+export interface connectionListInterface {
+    id:string,
+    targets:string[]
+}

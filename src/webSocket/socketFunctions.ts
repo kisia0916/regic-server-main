@@ -1,5 +1,5 @@
 import { authFunction } from "../functions/authFunctions"
-import { connectionRequestInterface, first_handshake_interface, onlineHostListInterface, onlineUserListInterface } from "../Interfaces/socketInterface"
+import { connectionListInterface, connectionRequestInterface, first_handshake_interface, onlineHostListInterface, onlineUserListInterface } from "../Interfaces/socketInterface"
 import RemoteMachine from "../models/RemoteMachine"
 import { io, jwt_secret_key } from "../server"
 import bcrypt, { hash } from "bcrypt"
@@ -7,8 +7,10 @@ import bcrypt, { hash } from "bcrypt"
 
 export const onlineUserList:onlineUserListInterface[] = []
 export const onlineHostList:onlineHostListInterface[] = []
+export const connectionList:connectionListInterface[] = []
 
 export const socketFunctions = (socket:any)=>{
+    let clientInfo:{type:"client"|"remoteMachine"|"",token:string,id:string} = {type:"",token:"",id:""}
     socket.on("first_handshake",async(data:first_handshake_interface)=>{
         try{
             if (data.userType === "client"){
@@ -29,6 +31,9 @@ export const socketFunctions = (socket:any)=>{
                         })
                     }
                     console.log(onlineUserList)
+                    clientInfo = {type:"client",token:data.token,id:authResult.decode?.userId as string}
+                    connectionList.push({id:authResult.decode?.userId as string,targets:[]})
+                    console.log(connectionList)
                     io.to(socket.id).emit("first_handshake_done","")
                 }else{
                     io.to(socket.id).emit("socket-error","auth_error")
@@ -60,7 +65,9 @@ export const socketFunctions = (socket:any)=>{
                                     userId:regicRemoteMachine.userId
                                 })
                             }
-                            console.log(onlineHostList)
+                            clientInfo = {type:"remoteMachine",token:data.token,id:regicRemoteMachine.machineId}
+                            connectionList.push({id:regicRemoteMachine.machineId,targets:[]})
+                            console.log(connectionList)
                             io.to(socket.id).emit("first_handshake_done","")
                         }else{
                             io.to(socket.id).emit("socket-error","auth_error")
@@ -113,6 +120,15 @@ export const socketFunctions = (socket:any)=>{
                 if (user.userId === host.userId){
                     console.log("done")
                     // io.to(socket.id).emit("run_command",{command:"dir",userId:user.userId})
+                    const userConnectionListIndex = connectionList.findIndex((i)=>i.id === user.userId)
+                    const hostConnectionListIndex = connectionList.findIndex((i)=>i.id === host.machineId)
+                    if (userConnectionListIndex !== -1){
+                        connectionList[userConnectionListIndex].targets.push(host.machineId)
+                    }
+                    if (hostConnectionListIndex !== -1){
+                        connectionList[hostConnectionListIndex].targets.push(user.userId)
+                    }
+                    console.log(connectionList)
                     io.to(user.socketId).emit("new_process_created",{data:data.data,machineId:host.machineId})
                 }else{
                     console.log("done2")
@@ -153,7 +169,7 @@ export const socketFunctions = (socket:any)=>{
                     console.log(authResult)
                     if (targetHost.userId === authResult.decode.userId){
                         console.log("send")
-                        io.to(targetHost.socketId).emit("run_command",{command:data.command,userId:authResult.decode.userId})
+                        io.to(targetHost.socketId).emit("get_input",{command:data.command,userId:authResult.decode.userId})
                     }else{
                         io.to(socket.id).emit("socket-error","server_error")
                     }
@@ -166,5 +182,77 @@ export const socketFunctions = (socket:any)=>{
         }catch{
             io.to(socket.id).emit("socket-error","server_error0")
         }
+    })
+    socket.on("resize_term",(data:{token:string,size:number[],machineId:string})=>{
+        try{
+            const authResult:any = authFunction(data.token,jwt_secret_key as string)
+            if (authResult.status === "success"){
+                const targetHost = onlineHostList.find((i)=>i.machineId === data.machineId)
+                if (targetHost){
+                    if (targetHost.userId === authResult.decode.userId){
+                        io.to(targetHost.socketId).emit("resize_term",{userId:authResult.decode.userId,size:data.size})
+                    }else{
+                        io.to(socket.id).emit("socket-error","server_error0")
+                    }
+                }else{
+                    io.to(socket.id).emit("socket-error","server_error0")
+                }
+            }else{
+                io.to(socket.id).emit("socket-error","server_error0")
+            }
+        }catch{
+            io.to(socket.id).emit("socket-error","server_error0")
+        }
+    })  
+    socket.on("disconnect",()=>{
+        if (clientInfo.type === "client"){
+            //send client signal to host
+            const connectionListIndex = connectionList.findIndex((i)=>i.id === clientInfo.id)
+            if (connectionListIndex !== -1){
+                connectionList[connectionListIndex].targets.forEach((i)=>{
+                    const targetHost = onlineHostList.find((k)=>k.machineId === i)
+                    const hostConnectionIndex = connectionList.findIndex((f)=>f.id === i)
+                    if (hostConnectionIndex !== -1){
+                        const disconUserIndex = connectionList[hostConnectionIndex].targets.findIndex((j)=>j === clientInfo.id)
+                        if (disconUserIndex !== -1){
+                            connectionList[hostConnectionIndex].targets.splice(disconUserIndex,1)
+                        }
+                    }
+                    if (targetHost){
+                        io.to(targetHost.socketId).emit("disconnect_client",{userId:clientInfo.id})
+                    }
+                })
+                connectionList.splice(connectionListIndex,1)
+            }
+            const targetUserIndex = onlineUserList.findIndex((i)=>i.userId === clientInfo.id)
+            if (targetUserIndex !== -1){
+                onlineUserList.splice(targetUserIndex,1)
+            }
+        }else if (clientInfo.type === "remoteMachine"){
+            const connectionListIndex = connectionList.findIndex((i)=>i.id === clientInfo.id)
+            if (connectionListIndex !== -1){
+                connectionList[connectionListIndex].targets.forEach((i)=>{
+                    const targetUser = onlineUserList.find((k)=>k.userId === i)
+                    const userConnectionIndex = connectionList.findIndex((f)=>f.id === i)
+                    if (userConnectionIndex !== -1){
+                        const disconHostIndex = connectionList[userConnectionIndex].targets.findIndex((j)=>j === clientInfo.id)
+                        if (disconHostIndex !==-1){
+                            connectionList[userConnectionIndex].targets.splice(disconHostIndex,1)
+                        }
+                    }
+                    if (targetUser){
+                        io.to(targetUser.socketId).emit("disconnect_remote_machine",{machineId:clientInfo.id})
+                    }
+                })
+                connectionList.splice(connectionListIndex,1)
+            }
+            const targetHostIndex = onlineHostList.findIndex((i)=>i.machineId === clientInfo.id)
+            if (targetHostIndex !== -1){
+                onlineHostList.splice(targetHostIndex,1)
+            }
+        }
+        console.log(onlineHostList)
+        console.log(onlineUserList)
+        console.log(connectionList)
     })
 }

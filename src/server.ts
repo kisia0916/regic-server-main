@@ -10,7 +10,6 @@ import cmdLog from "./router/cmdLog/cmdLogData"
 import bodyParser from "body-parser"
 import jwt from "jsonwebtoken"
 import { error_format } from './router/errorFormat';
-import { Socket } from 'socket.io';
 import {Server} from "socket.io"
 import { socketFunctions } from './webSocket/socketFunctions';
 import cors from "cors"
@@ -71,7 +70,6 @@ export const io = new Server(server,{
     }
 })
 io.on("connection",(socket)=>{
-    console.log("userconnection")
     socketFunctions(socket)
 })
 
