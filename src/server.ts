@@ -86,7 +86,7 @@ app.use((req:any,res,next)=>{
                 return new Promise((resolve,reject)=>{
                     jwt.verify(jwtToken,jwt_secret_key as string,async(error:any,decode:any)=>{
                         if (error){
-                            return res.status(401).json(error_format("auth_error","status 401"))
+                            return res.status(401).json(error_format("auth_error","status 481"))
                         }
                         const regicUser = await User.findOne({userId:decode.userId})
                         if (regicUser){
