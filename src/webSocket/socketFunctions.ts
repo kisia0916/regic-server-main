@@ -158,18 +158,17 @@ export const socketFunctions = (socket:any)=>{
             io.to(socket.id).emit("socket-error","server_error7")
         }
     })
-    socket.on("run_command",(data:{token:string,command:string,machineId:string})=>{
+    socket.on("run_command",(data:{userId:string,command:string,machineId:string})=>{
         try{
-            console.log(data)
-            const authResult:any = authFunction(data.token,jwt_secret_key as string)
-            if (authResult.status === "success"){
+            // const authResult:any = authFunction(data.token,jwt_secret_key as string)
+            // if (authResult.status === "success"){
+            if (data.userId === clientInfo.id){
                 const targetHost = onlineHostList.find((i)=>i.machineId === data.machineId)
                 if (targetHost){
                     console.log(targetHost)
-                    console.log(authResult)
-                    if (targetHost.userId === authResult.decode.userId){
+                    if (targetHost.userId === data.userId){
                         console.log("send")
-                        io.to(targetHost.socketId).emit("get_input",{command:data.command,userId:authResult.decode.userId})
+                        io.to(targetHost.socketId).emit("get_input",{command:data.command,userId:data.userId})
                     }else{
                         io.to(socket.id).emit("socket-error","server_error")
                     }
