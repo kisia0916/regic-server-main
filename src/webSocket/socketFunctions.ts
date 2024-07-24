@@ -203,6 +203,27 @@ export const socketFunctions = (socket:any)=>{
             io.to(socket.id).emit("socket-error","server_error0")
         }
     })  
+    socket.on("restart_host",(data:{token:string,machineId:string})=>{
+        try{
+            const authResult = authFunction(data.token,jwt_secret_key as string)
+            if (authResult.status === "success"){
+                const targetHost = onlineHostList.find((i)=>i.machineId === data.machineId)
+                if (targetHost){
+                    if (authResult.decode?.userId === targetHost.userId){
+                        io.to(targetHost.socketId).emit("restart_host","")
+                    }else{
+                        io.to(socket.id).emit("socket-error","server_error")
+                    }
+                }else{
+                    io.to(socket.id).emit("socket-error","server_error")
+                }
+            }else{
+                io.to(socket.id).emit("socket-error","server_error")
+            }
+        }catch{
+            io.to(socket.id).emit("socket-error","server_error")
+        }
+    })
     socket.on("disconnect",()=>{
         if (clientInfo.type === "client"){
             //send client signal to host
