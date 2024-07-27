@@ -63,7 +63,7 @@ export const jwt_secret_key = process.env.JWT_SECRET_KEY
 //websocket
 export const io = new Server(server,{
     cors:{
-        origin:["https://regic-instans-1.onrender.com","https://regic-instans-1.onrender.com","http://localhost:1212","http://localhost:3000"],
+        origin:["https://regic-instans-2.onrender.com","https://regic-instans-1.onrender.com","http://localhost:1212","http://localhost:3000"],
         allowedHeaders: ["my-custom-header",'Content-Type', 'Authorization'],
         methods:['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         credentials: true
