@@ -25,13 +25,18 @@ const limiter = rateLimit({
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
 })
 
+export const client_id = process.env.GOOGLE_CLIENT_ID
+export const client_secret = process.env.GOOGLE_CLIENT_SECRET
+export const auth_URL = process.env.AUTH_URL
+export const jwt_secret_key = process.env.JWT_SECRET_KEY
+
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
 });
 app.use(cors({
-    origin: ["https://regic-instans-2.onrender.com","https://regic-instans-1.onrender.com","http://localhost:3000","http://localhost:1212"], // ReactアプリケーションのURL
+    origin: [`${auth_URL}`,"https://regic-instans-2.onrender.com","https://regic-instans-1.onrender.com","http://localhost:3000","http://localhost:1212"], // ReactアプリケーションのURL
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 許可するHTTPメソッド
     allowedHeaders: ['Content-Type', 'Authorization'], // 許可するヘッダー
     credentials:true
@@ -54,16 +59,11 @@ mongoose.connect("mongodb+srv://fumi:jhPmwWf0skf8lhWb@regic-database-1.0dj9jrk.m
     console.log("connection error")
 })
 
-export const client_id = process.env.GOOGLE_CLIENT_ID
-export const client_secret = process.env.GOOGLE_CLIENT_SECRET
-export const auth_URL = process.env.AUTH_URL
-export const jwt_secret_key = process.env.JWT_SECRET_KEY
-
 
 //websocket
 export const io = new Server(server,{
     cors:{
-        origin:["https://regic-instans-2.onrender.com","https://regic-instans-1.onrender.com","http://localhost:1212","http://localhost:3000"],
+        origin:[`${auth_URL}`,"https://regic-instans-2.onrender.com","https://regic-instans-1.onrender.com","http://localhost:1212","http://localhost:3000"],
         allowedHeaders: ["my-custom-header",'Content-Type', 'Authorization'],
         methods:['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         credentials: true
