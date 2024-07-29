@@ -36,7 +36,7 @@ app.use((req, res, next) => {
     next();
 });
 app.use(cors({
-    origin: [`${auth_URL}`,"https://regic-instans-2.onrender.com","https://regic-instans-1.onrender.com","http://localhost:3000","http://localhost:1212"], // ReactアプリケーションのURL
+    origin: ["https://regic-instans-private.onrender.com","https://regic-instans-2.onrender.com","https://regic-instans-1.onrender.com","http://localhost:3000","http://localhost:1212"], // ReactアプリケーションのURL
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 許可するHTTPメソッド
     allowedHeaders: ['Content-Type', 'Authorization'], // 許可するヘッダー
     credentials:true
@@ -63,7 +63,7 @@ mongoose.connect("mongodb+srv://fumi:jhPmwWf0skf8lhWb@regic-database-1.0dj9jrk.m
 //websocket
 export const io = new Server(server,{
     cors:{
-        origin:[`${auth_URL}`,"https://regic-instans-2.onrender.com","https://regic-instans-1.onrender.com","http://localhost:1212","http://localhost:3000"],
+        origin:["https://regic-instans-private.onrender.com","https://regic-instans-2.onrender.com","https://regic-instans-1.onrender.com","http://localhost:1212","http://localhost:3000"],
         allowedHeaders: ["my-custom-header",'Content-Type', 'Authorization'],
         methods:['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         credentials: true
