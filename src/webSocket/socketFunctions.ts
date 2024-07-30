@@ -224,6 +224,11 @@ export const socketFunctions = (socket:any)=>{
             io.to(socket.id).emit("socket-error","server_error")
         }
     })
+
+    socket.on("interval-ping",(data:any)=>{
+        io.to(socket.id).emit("interval-pong",{})
+    })
+
     socket.on("disconnect",()=>{
         if (clientInfo.type === "client"){
             //send client signal to host
@@ -249,6 +254,7 @@ export const socketFunctions = (socket:any)=>{
                 onlineUserList.splice(targetUserIndex,1)
             }
         }else if (clientInfo.type === "remoteMachine"){
+            console.log("host disconnected")
             const connectionListIndex = connectionList.findIndex((i)=>i.id === clientInfo.id)
             if (connectionListIndex !== -1){
                 connectionList[connectionListIndex].targets.forEach((i)=>{
