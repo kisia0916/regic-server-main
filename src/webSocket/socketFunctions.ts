@@ -11,6 +11,8 @@ export const connectionList:connectionListInterface[] = []
 
 export const socketFunctions = (socket:any)=>{
     let clientInfo:{type:"client"|"remoteMachine"|"",token:string,id:string} = {type:"",token:"",id:""}
+    console.log("kokokokokoko")
+    console.log(clientInfo)
     socket.on("first_handshake",async(data:first_handshake_interface)=>{
         try{
             if (data.userType === "client"){
@@ -226,7 +228,7 @@ export const socketFunctions = (socket:any)=>{
     })
 
     socket.on("interval-ping",(data:any)=>{
-        io.to(socket.id).emit("interval-pong",{})
+        io.to(socket.id).emit("interval-pong",clientInfo)
     })
 
     socket.on("disconnect",()=>{
