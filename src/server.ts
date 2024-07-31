@@ -62,8 +62,6 @@ mongoose.connect("mongodb+srv://fumi:jhPmwWf0skf8lhWb@regic-database-1.0dj9jrk.m
 
 //websocket
 export const io = new Server(server,{
-    pingTimeout:60000,
-    pingInterval:25000,
     cors:{
         origin:["https://regic-instans-private.onrender.com","https://regic-instans-2.onrender.com","https://regic-instans-1.onrender.com","http://localhost:1212","http://localhost:3000"],
         allowedHeaders: ["my-custom-header",'Content-Type', 'Authorization'],
