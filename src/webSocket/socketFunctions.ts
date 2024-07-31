@@ -279,6 +279,7 @@ export const socketFunctions = (socket:any)=>{
                 onlineHostList.splice(targetHostIndex,1)
             }
         }
+        console.log("discon user")
         console.log(onlineHostList)
         console.log(onlineUserList)
         console.log(connectionList)
