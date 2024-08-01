@@ -34,7 +34,13 @@ export const socketFunctions = (socket:any)=>{
                     }
                     console.log(onlineUserList)
                     clientInfo = {type:"client",token:data.token,id:authResult.decode?.userId as string}
-                    connectionList.push({id:authResult.decode?.userId as string,targets:[]})
+                    const targetUserIndex = connectionList.findIndex((i:any)=>i.id === authResult.decode?.userId)
+                    if (targetUserIndex  === -1){
+                         connectionList.push({id:authResult.decode?.userId as string,targets:[]})
+                    }else{
+                        connectionList.splice(targetUserIndex,1)
+                        connectionList.push({id:authResult.decode?.userId as string,targets:[]})
+                    }
                     console.log(connectionList)
                     io.to(socket.id).emit("first_handshake_done","")
                 }else{
