@@ -268,9 +268,7 @@ export const socketFunctions = (socket:any)=>{
             if (targetUserIndex !== -1){
                 onlineUserList.splice(targetUserIndex,1)
             }
-        }
-        
-        if (onlineHostList.find((i:any)=>i.socketId === socket.id)){
+        }else if (onlineHostList.find((i:any)=>i.socketId === socket.id)){
             console.log("host disconnected")
             const connectionListIndex = connectionList.findIndex((i)=>i.id === clientInfo.id)
             if (connectionListIndex !== -1){
