@@ -232,7 +232,8 @@ export const socketFunctions = (socket:any)=>{
     })
 
     socket.on("disconnect",()=>{
-        if (clientInfo.type === "client"){
+        if (onlineUserlist.find((i:any)=>i.socketId === socket.id)){
+            console.log("(-⊙ω⊙-)ゞ")
             //send client signal to host
             const connectionListIndex = connectionList.findIndex((i)=>i.id === clientInfo.id)
             if (connectionListIndex !== -1){
