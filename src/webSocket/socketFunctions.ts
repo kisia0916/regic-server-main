@@ -74,7 +74,13 @@ export const socketFunctions = (socket:any)=>{
                                 })
                             }
                             clientInfo = {type:"remoteMachine",token:data.token,id:regicRemoteMachine.machineId}
-                            connectionList.push({id:regicRemoteMachine.machineId,targets:[]})
+                            const targetHostIndex = connectionList.findIndex((i:any)=>i.id === regicRemoteMachine.machineId)
+                            if (targetHostIndex  === -1){
+                               connectionList.push({id:regicRemoteMachine.machineId as string,targets:[]})
+                            }else{
+                               connectionList.splice(targetHostIndex,1)
+                               connectionList.push({id:regicRemoteMachine.machineId as string,targets:[]})
+                            }
                             console.log(connectionList)
                             io.to(socket.id).emit("first_handshake_done","")
                         }else{
