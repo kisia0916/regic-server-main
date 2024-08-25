@@ -37,7 +37,7 @@ app.use((req, res, next) => {
     next();
 });
 app.use(cors({
-    origin: [auth_URL,"http://localhost:3000","http://localhost:1212"], // ReactアプリケーションのURL
+    origin: [auth_URL as string,"http://localhost:3000","http://localhost:1212"], // ReactアプリケーションのURL
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 許可するHTTPメソッド
     allowedHeaders: ['Content-Type', 'Authorization'], // 許可するヘッダー
     credentials:true
@@ -53,7 +53,7 @@ app.use((err: SyntaxError, req: Request, res: Response, next: NextFunction) => {
     next();
   });
 
-mongoose.connect(dbaccess_key).then((res)=>{
+mongoose.connect(dbaccess_key as string).then((res)=>{
     console.log("connection db!")
 }).catch((error)=>{
     console.log(error)
@@ -64,7 +64,7 @@ mongoose.connect(dbaccess_key).then((res)=>{
 //websocket
 export const io = new Server(server,{
     cors:{
-        origin:[auth_URL,"http://localhost:1212","http://localhost:3000"],
+        origin:[auth_URL as string,"http://localhost:1212","http://localhost:3000"],
         allowedHeaders: ["my-custom-header",'Content-Type', 'Authorization'],
         methods:['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         credentials: true
