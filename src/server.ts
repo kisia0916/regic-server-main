@@ -29,6 +29,7 @@ export const client_id = process.env.GOOGLE_CLIENT_ID
 export const client_secret = process.env.GOOGLE_CLIENT_SECRET
 export const auth_URL = process.env.AUTH_URL
 export const jwt_secret_key = process.env.JWT_SECRET_KEY
+export const dbaccess_key = process.env.DB_KEY
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
@@ -36,7 +37,7 @@ app.use((req, res, next) => {
     next();
 });
 app.use(cors({
-    origin: ["https://regic-instans-private.onrender.com","https://regic-instans-2.onrender.com","https://regic-instans-1.onrender.com","http://localhost:3000","http://localhost:1212"], // ReactアプリケーションのURL
+    origin: [auth_URL,"http://localhost:3000","http://localhost:1212"], // ReactアプリケーションのURL
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 許可するHTTPメソッド
     allowedHeaders: ['Content-Type', 'Authorization'], // 許可するヘッダー
     credentials:true
@@ -52,7 +53,7 @@ app.use((err: SyntaxError, req: Request, res: Response, next: NextFunction) => {
     next();
   });
 
-mongoose.connect("mongodb+srv://fumi:jhPmwWf0skf8lhWb@regic-database-1.0dj9jrk.mongodb.net/?retryWrites=true&w=majority&appName=regic-database-1").then((res)=>{
+mongoose.connect(dbaccess_key).then((res)=>{
     console.log("connection db!")
 }).catch((error)=>{
     console.log(error)
@@ -63,7 +64,7 @@ mongoose.connect("mongodb+srv://fumi:jhPmwWf0skf8lhWb@regic-database-1.0dj9jrk.m
 //websocket
 export const io = new Server(server,{
     cors:{
-        origin:["https://regic-instans-private.onrender.com","https://regic-instans-2.onrender.com","https://regic-instans-1.onrender.com","http://localhost:1212","http://localhost:3000"],
+        origin:[auth_URL,"http://localhost:1212","http://localhost:3000"],
         allowedHeaders: ["my-custom-header",'Content-Type', 'Authorization'],
         methods:['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         credentials: true
