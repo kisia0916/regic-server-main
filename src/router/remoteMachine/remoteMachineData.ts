@@ -110,7 +110,7 @@ router.post("/getmachine",async(req:custom_request,res)=>{
         return res.status(500).json(error_format("server error","status 500"))
     }
 })
-router.delete("/deletemachine",async(req:custom_request,res)=>{
+router.post("/deletemachine",async(req:custom_request,res)=>{
     try{
         const userId =req.auth_result?.decode.userId
         const machineId = req.body.machineId
@@ -128,7 +128,7 @@ router.delete("/deletemachine",async(req:custom_request,res)=>{
                 return res.status(404).json(error_format("remote_machine_not_found","status 404"))
             }
         }else{
-            return res.status(400)
+            return res.status(400).json(error_format("bad_request","status 400"))
         }
     }catch{
         return res.status(500).json(error_format("server error","status 500"))
