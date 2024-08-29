@@ -110,5 +110,29 @@ router.post("/getmachine",async(req:custom_request,res)=>{
         return res.status(500).json(error_format("server error","status 500"))
     }
 })
+router.delete("/deletemachine",async(req:custom_request,res)=>{
+    try{
+        const userId =req.auth_result?.decode.userId
+        const machineId = req.body.machineId
+        const bodyCheck = checkBodyContents([machineId])
+        if (bodyCheck){
+            const targetMachine = await RemoteMachine.findOne({machineId:machineId})
+            if (targetMachine){
+                if (targetMachine.userId === userId){
+                    await RemoteMachine.deleteOne({machineId:machineId})
+                    return res.status(200).json({message:"delete done"})
+                }else{
+                    return res.status(404).json(error_format("remote_machine_not_found","status 404"))
+                }
+            }else{
+                return res.status(404).json(error_format("remote_machine_not_found","status 404"))
+            }
+        }else{
+            return res.status(400)
+        }
+    }catch{
+        return res.status(500).json(error_format("server error","status 500"))
+    }
+})
 
 export default router
