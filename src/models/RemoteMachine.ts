@@ -26,6 +26,10 @@ const dbSchema:Schema = new Schema({
         sparse: true,
         required:true,
     },
+    run_sys:{
+        type:String,
+        default:"powershell.exe"
+    },
     userId:{
         type:String,
         required:true
