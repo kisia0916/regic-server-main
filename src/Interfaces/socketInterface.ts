@@ -19,6 +19,7 @@ export interface onlineHostListInterface {
 
 export interface connectionRequestInterface {
     machineId:string,
+    run_sys:string,
     jwtToken:string
 }
 

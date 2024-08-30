@@ -107,7 +107,7 @@ export const socketFunctions = (socket:any)=>{
                     const regicMachineData = await RemoteMachine.findOne({machineId:data.machineId})
                     if (regicMachineData){
                         if (regicMachineData.userId === jwtAuthResult.decode?.userId){
-                            io.to(onlineHostInfo.socketId).emit("connection_request",{userId:regicMachineData.userId})
+                            io.to(onlineHostInfo.socketId).emit("connection_request",{userId:regicMachineData.userId,run_sys:data.run_sys})
                         }else{
                             io.to(socket.id).emit("socket-error","server_error3")
                         }
