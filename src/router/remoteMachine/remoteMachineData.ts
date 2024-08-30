@@ -10,6 +10,7 @@ import { jwt_secret_key } from "../../server"
 import bcrypt from "bcrypt"
 import { onlineHostList } from "../../webSocket/socketFunctions"
 import jwt from "jsonwebtoken"
+import { onlineHostListInterface } from "../../Interfaces/socketInterface"
 
 const router = express.Router()
 
@@ -104,7 +105,13 @@ router.post("/getmachine",async(req:custom_request,res)=>{
     try{
         const userId = req.auth_result?.decode.userId
         const machineList:RemoteMachineInterfaceMain[] = await RemoteMachine.find({userId:userId})
-        return res.status(200).json({allRemoteMachine:machineList,onlineRemoteMachine:onlineHostList})
+        let sendOnlineHostList:onlineHostListInterface[] = []
+        onlineHostList.forEach((i)=>{
+            if (i.userId === userId){
+                sendOnlineHostList = [...sendOnlineHostList,i]
+            }
+        })
+        return res.status(200).json({allRemoteMachine:machineList,onlineRemoteMachine:sendOnlineHostList})
     }catch(error){
         console.log(error)
         return res.status(500).json(error_format("server error","status 500"))
