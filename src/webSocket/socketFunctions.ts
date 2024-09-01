@@ -143,7 +143,7 @@ export const socketFunctions = (socket:any)=>{
                         connectionList[hostConnectionListIndex].targets.push(user.userId)
                     }
                     console.log(connectionList)
-                    io.to(user.socketId).emit("new_process_created",{data:data.data,machineId:host.machineId})
+                    io.to(user.socketId).emit("new_process_created",{data:data.data,machineId:host.machineId,machineName:host.machineName})
                 }else{
                     console.log("done2")
                     io.to(user.socketId).emit("socket-error","auth_error")
