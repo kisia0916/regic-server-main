@@ -73,6 +73,7 @@ router.post("/auth",async(req,res)=>{
                 const returnToken:authReturnJwtTokens = {status:"success",token:generate_jwt_token(returnData)}
                 return res.status(200).json(returnToken)
             }catch(error){
+                console.log(error)
                 return res.status(401).json(error_format("auth_error","status 401"))
             }
         }else if (jwt_token){
